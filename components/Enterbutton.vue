@@ -1,0 +1,118 @@
+<template>
+  <div>
+    <button type="button" class="vhod" @click="Listener">
+      ВХОД
+    </button>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'EnterButton',
+
+  props: {
+    mails: {
+      type: String,
+      default: ''
+    },
+    passwords: {
+      type: String,
+      default: ''
+    },
+    confirmpasswords: {
+      type: String,
+      default: ''
+    },
+    bools: Boolean,
+    names: {
+      type: String,
+      default: ''
+    }
+  },
+
+  methods: {
+    Listener () {
+      if (this.bools) {
+        if (this.mails && this.passwords) {
+          this.apisLog()
+        } else {
+          alert('Остались незаполненные поля')
+        };
+      } else {
+        if (this.passwords !== this.confirmpasswords) {
+          alert('Пароли не совпадают')
+        } else if (this.passwords && this.confirmpasswords && this.mails && this.names) {
+          this.apisReg()
+        } else {
+          alert('Остались незаполненные поля')
+        };
+      };
+    },
+    apisReg () {
+      fetch('https://course-vue.javascript.ru/api/auth/register', {
+        method: 'POST',
+        headers: { accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(
+          {
+            username: this.names,
+            email: this.mails,
+            '1_password': this.passwords,
+            '2_password': this.confirmpasswords,
+          })
+      })
+        .then((res) => {
+          if (res.status === 201) {
+            this.$router.push({ name: 'Auth-login' })
+          } else {
+            alert(res.status)
+          }
+        })
+        .then((res) => {
+          if (res.status === 400) {
+            alert(res)
+          }
+        })
+      },
+    apisLog () {
+      fetch('https://course-vue.javascript.ru/api/auth/register', {
+        method: 'POST',
+        headers: { accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(
+          {
+            username: this.names,
+            password: this.passwords,
+          })
+      })
+        .then((res) => {
+          if (res.status === 200) {
+            this.$router.push({ name: 'index'})
+          }
+        })
+        .then((res) => {
+          if (res.status === 401) {
+            alert(res)
+          }
+        })
+      }
+  }
+}
+</script>
+
+<style>
+.vhod {
+  text-align: center;
+  margin-top: 15px;
+  border: 1px solid rgb(81, 112, 197);
+  width: 200px;
+  padding: 20px;
+  border-radius: 7px;
+  background-color: rgb(56, 81, 150);
+  color: white;
+  font-size: medium;
+  display: inline-block;
+  cursor: pointer;
+}
+.vhod:hover {
+  background-color: rgb(52, 69, 117);
+}
+</style>
