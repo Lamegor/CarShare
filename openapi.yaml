@@ -1,0 +1,130 @@
+openapi: 3.0.3
+info:
+  title: Car Rent
+  description: |-
+    Сайт создан для того, чтобы менеджить службу каршеринга
+    
+  version: 0.0.1
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Структура
+    description: Все url и методы
+  - name: basics
+    description: Базовые функции
+  - name: cars
+    description: Машины
+  - name: user
+    description: Операции с пользователями
+paths:
+  /login:
+    post:
+      tags:
+        - basics
+      summary: Login in your account
+      description: Login and get cookie
+      operationId: Login
+      requestBody:
+        description: Get user session
+        content:
+          application/json:
+            schema:
+              example: {"username": "User", "password": "pass123"}
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                example: {"message": "Login successful", "user": "Some_User"}
+        '400':
+          description: "Invalid input"
+        '401':
+          description: "Invalid credentials"
+        '500':
+          description: "Internal Server Error"
+
+            
+  /register:
+    post:
+      tags:
+        - basics
+      summary: Register
+      description: Creating new account
+      operationId: Register
+      requestBody:
+        description: Creating an account and returns session
+        content:
+          application/json:
+            schema:
+              example: {"username": "admin", "1_password": "adm123", "2_password": "adm123", "email": "sobaka_sutulaya@gmail.com"} 
+        required: true
+      responses:
+        '201':
+          description: "User created"
+        '400':
+          description: "Invalid input"
+        '409':
+          description: "There is such user"
+        '500':
+          description: "Internal Server Error"  
+          
+  /cars:
+    get:
+      tags:
+        - cars
+      summary: View all available cars
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                example: [{"Condition":"Available","Manufacturer":"Toyota","Model":"Corolla","Year":"2000","id":"1"},{"Condition":"Broken","Manufacturer":"Nissan","Model":"BlueBird","Year":"2002","id":"2"}]
+  /user/profile:
+    get:
+      tags:
+        - user
+      summary: View profile 
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                example: {"e-mail": "sas@mail.ru","first_name": "Михаил","gender": "М","id": 7,"last_name": "Ивченко","phone": "+7-999-999-99-99","second_name": "Витальевич","username": "mikkie211"}
+        '401':
+          description: Unauthorized
+          
+  /cars/{id}:
+    get:
+      tags:
+        - cars
+      summary: View profile 
+      responses:
+        '200':
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                example: {"Condition":"Available","Manufacturer":"Toyota","Model":"Corolla","Year":"2000"}
+        '404':
+          description: No car by such id
+      
+              
+      
+components:
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header

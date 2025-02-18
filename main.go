@@ -204,13 +204,12 @@ func GetCarById(w http.ResponseWriter, r *http.Request) {
 	var car db.Car
 	res := db.DB.Where(&db.Car{ID: id}).First(&car)
 	if res.RowsAffected == 0 {
-		http.Error(w, "No car by the id "+idStr, http.StatusNotFound)
+		http.Error(w, "No car by such id", http.StatusNotFound)
 		return
 	}
 
 	//Выводим информацию по машине
 	response := make(map[string]interface{})
-	response["id"] = car.ID
 	response["Manufacturer"] = car.Manufacturer
 	response["Model"] = car.Model
 	response["Year"] = car.YearOfManufacture
