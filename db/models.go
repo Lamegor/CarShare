@@ -4,21 +4,23 @@ import "time"
 
 // Пользователь
 type User struct {
-	ID             int       `gorm:"primaryKey"`
-	Login          string    `gorm:"unique,column:login"`
-	Password       []byte    `gorm:"column:password"`
-	FirstName      string    `gorm:"column:first_name"`
-	SecondName     string    `gorm:"column:second_name"`
-	LastName       string    `gorm:"column:last_name"`
-	PassportData   string    `gorm:"column:passport_data"`
-	IDLicense      string    `gorm:"column:id_license"`
-	IsActive       bool      `gorm:"column:is_active"`
-	Gender         string    `gorm:"column:gender"`
-	Birthday       time.Time `gorm:"column:birthday"`
-	ContactPhone   string    `gorm:"unique,column:contact_phone"`
-	Email          string    `gorm:"unique,column:email"`
-	Cookie         string    `gorm:"unique,column:cookie"`
-	SessionExpires time.Time `gorm:"column:session_expires"`
+	ID                   int       `gorm:"primaryKey"`
+	Login                string    `gorm:"unique,column:login"`
+	Password             []byte    `gorm:"column:password"`
+	FirstName            string    `gorm:"column:first_name"`
+	SecondName           string    `gorm:"column:second_name"`
+	LastName             string    `gorm:"column:last_name"`
+	PassportData         string    `gorm:"column:passport_data"`
+	IDLicense            string    `gorm:"column:id_license"`
+	IsActive             bool      `gorm:"column:is_active, default:true"`
+	Gender               string    `gorm:"column:gender"`
+	Birthday             time.Time `gorm:"column:birthday"`
+	ContactPhone         string    `gorm:"unique,column:contact_phone"`
+	Email                string    `gorm:"unique,column:email"`
+	Cookie               string    `gorm:"unique,column:cookie"`
+	SessionExpires       time.Time `gorm:"column:session_expires"`
+	LastFailedAttempt    time.Time `gorm:"column:last_failed_attempt"`
+	FailedAttemptsInARow uint      `gorm:"column:last_failed_attempt, default:0"`
 }
 
 // Модель машины

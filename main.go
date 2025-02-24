@@ -1,19 +1,23 @@
 package main
 
 import (
+	"carrent/carmanage"
 	"carrent/db"
+	"carrent/users"
 	"context"
-	"crypto/rand"
-	"encoding/base64"
-	"encoding/json"
+	"fmt"
+	"io"
 	"log"
+	"net"
 	"net/http"
-	"strconv"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/gorilla/csrf"
+	"github.com/hirochachacha/go-smb2"
 	_ "github.com/wagslane/go-password-validator"
-	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -54,212 +58,33 @@ func main() {
 			Debug:            true,
 		}))*/
 
+	CSRF := csrf.Protect(
+		[]byte("a-32-byte-long-key-goes-here"),
+		csrf.CookieName("X-CSRF-Token"),
+		csrf.Secure(false), // Set to true in production
+		csrf.Path("/auth"),
+		//csrf.ErrorHandler(http.HandlerFunc(serverError(403))),
+	)
 	// Обработчики маршрутов
-	r.Post("/login", Login)
-	r.Post("/register", Register)
-	r.Get("/cars", ListCars)
-	r.Get("/cars/{id}", GetCarById)
-	r.Post("/cars/{id}/rent", SessionMiddleware(RentCar))
-	r.Get("/cars/{id}/track", SessionMiddleware(TrackCar))
-	r.Get("/user/profile", SessionMiddleware(ViewProfile))
-	r.Post("/user/license/send", SessionMiddleware(SendLicense))
+	r.Post("/auth/login", users.Login)
+	r.Get("/auth/login", users.GetCSRFToken)
+	r.Post("/auth/register", users.Register)
+	r.Get("/auth/register", users.GetCSRFToken)
+	r.Get("/cars", carmanage.ListCars)
+	r.Get("/cars/{id}", carmanage.GetCarById)
+	r.Post("/cars/{id}/rent", SessionMiddleware(carmanage.RentCar))
+	r.Get("/cars/{id}/track", SessionMiddleware(carmanage.TrackCar))
+	r.Get("/user/profile", SessionMiddleware(users.ViewProfile))
+	r.Post("/user/license/send", SessionMiddleware(users.SendLicense))
 
 	// Запуск сервера
 	log.Printf("Server started at 8080")
-	http.ListenAndServe(":8080", r)
-}
-
-// Вход зарегистрированного пользователя, возвращает cookie пользователю
-func Login(w http.ResponseWriter, r *http.Request) {
-	var credentials map[string]string
-	err := json.NewDecoder(r.Body).Decode(&credentials)
-	if err != nil || credentials["username"] == "" || credentials["password"] == "" {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
-		return
-	}
-
-	var user db.User
-	db.DB.Where(&db.User{Login: credentials["username"]}).First(&user)
-	if user.ID == 0 {
-		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-		return
-	}
-	err = bcrypt.CompareHashAndPassword(user.Password, []byte(credentials["password"]))
-	if err != nil {
-		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-		return
-	}
-
-	// Костыль или нет, если такая кука уже есть или появляется ошибка при ее генерации 10 раз, то отправляем 500 ошибку
-	// Ограничение в количество генераций сделано для избежания бесконечного цикла
-	not_gen := true
-	var cookieValue string
-	count := 10
-	for not_gen && count != 0 {
-		cookieValue, err = GenerateRandomToken(COOKIE_LENGTH)
-		if res := db.DB.Where(&db.User{Cookie: cookieValue}); err == nil && res.RowsAffected == 0 {
-			not_gen = false
-			break
-		}
-		count--
-	}
-	if not_gen == true {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	response := map[string]string{"message": "Login successful", "user": user.Login}
-	//Сохраняем куку в базе данных
-	user.Cookie = cookieValue
-	user.SessionExpires = time.Now().Add(30 * 24 * time.Hour)
-	db.DB.Save(&user)
-
-	//Устанавливаем куку пользователю
-	http.SetCookie(w, &http.Cookie{
-		Name:     "cookie",
-		Value:    cookieValue,
-		HttpOnly: true,
-		Expires:  time.Now().Add(30 * 24 * time.Hour),
-		//Secure:   true,
-	})
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-	return
-
-}
-
-// Создание нового пользователя, перенаправляет на страницу логина
-func Register(w http.ResponseWriter, r *http.Request) {
-	var data map[string]string
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil || data["username"] == "" || data["1_password"] == "" || data["2_password"] == "" || data["email"] == "" {
-		http.Error(w, "One of Parametres is empty", http.StatusBadRequest)
-		return
-	} else if data["1_password"] != data["2_password"] {
-		http.Error(w, "Password missmatch", http.StatusBadRequest)
-		return
-	}
-
-	var usr db.User
-	result := db.DB.Where(&db.User{Login: data["username"]}).First(&usr)
-	if result.RowsAffected > 0 {
-		http.Error(w, "There is such user with such username", http.StatusConflict)
-		return
-	}
-	result = db.DB.Where(&db.User{Email: data["email"]}).First(&usr)
-	if result.RowsAffected > 0 {
-		http.Error(w, "There is user with such e-mail", http.StatusConflict)
-		return
-	}
-
-	hash_pass, err := bcrypt.GenerateFromPassword([]byte(data["1_password"]), bcrypt.DefaultCost)
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-	user := db.User{Login: data["username"], Password: hash_pass}
-	db.DB.Create(&user)
-
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(nil)
-}
-
-// Функция, которая выводит все машины
-func ListCars(w http.ResponseWriter, r *http.Request) {
-	var cars []db.Car
-	result := db.DB.Find(&cars)
-	if result.Error != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
-
-	var obj_responses []map[string]interface{}
-	for _, car := range cars {
-		response := make(map[string]interface{})
-		response["id"] = car.ID
-		response["Manufacturer"] = car.Manufacturer
-		response["Model"] = car.Model
-		response["Year"] = car.YearOfManufacture
-		response["Condition"] = car.Condition
-		obj_responses = append(obj_responses, response)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	jsonData, err := json.Marshal(obj_responses)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Write(jsonData)
-}
-
-// Выводим конкретную машину по ее id
-func GetCarById(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, "id must be integer", http.StatusBadRequest)
-		return
-	}
-	var car db.Car
-	res := db.DB.Where(&db.Car{ID: id}).First(&car)
-	if res.RowsAffected == 0 {
-		http.Error(w, "No car by such id", http.StatusNotFound)
-		return
-	}
-
-	//Выводим информацию по машине
-	response := make(map[string]interface{})
-	response["Manufacturer"] = car.Manufacturer
-	response["Model"] = car.Model
-	response["Year"] = car.YearOfManufacture
-	response["Condition"] = car.Condition
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-// Функция для генерациия куки, возвращается в кодировке base64
-func GenerateRandomToken(length int) (string, error) {
-	bytes := make([]byte, length)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(bytes), nil
-}
-
-func ViewProfile(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value("user").(db.User)
-
-	response := make(map[string]interface{})
-	response["username"] = user.Login
-	response["id"] = user.ID
-	response["first_name"] = user.FirstName
-	response["second_name"] = user.SecondName
-	response["last_name"] = user.LastName
-	response["phone"] = user.ContactPhone
-	response["e-mail"] = user.Email
-	response["gender"] = user.Gender
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
-func SendLicense(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func RentCar(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func TrackCar(w http.ResponseWriter, r *http.Request) {
-
+	http.ListenAndServe(":8080", CSRF(r))
 }
 
 func SessionMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("cookie")
+		cookie, err := r.Cookie("auth")
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -277,4 +102,88 @@ func SessionMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		ctx = context.WithValue(ctx, "user", user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func isValidFileType(file []byte) bool {
+	fileType := http.DetectContentType(file)
+	return strings.HasPrefix(fileType, "image/") // Only allow images
+}
+
+func fileUploadHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(10 << 20) // Ограничиваем размер до 10 MB
+
+	// Получаем файл из формы
+	file, handler, err := r.FormFile("license")
+	if err != nil {
+		http.Error(w, "Error retrieving the file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	// Пишем в логи информацию о файле
+	fmt.Fprintf(w, "Uploaded File: %s\n", handler.Filename)
+	fmt.Fprintf(w, "File Size: %d\n", handler.Size)
+	fmt.Fprintf(w, "MIME Header: %v\n", handler.Header)
+
+	// Проверяем тип файла
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		http.Error(w, "Invalid file", http.StatusBadRequest)
+		return
+	}
+
+	if !isValidFileType(fileBytes) {
+		http.Error(w, "Invalid file type", http.StatusUnsupportedMediaType)
+		return
+	}
+
+	// Сохраняем
+	dst, err := SaveFile(handler.Filename)
+	if err != nil {
+		http.Error(w, "Error saving the file", http.StatusInternalServerError)
+		return
+	}
+	defer dst.Close()
+
+	// Proceed with saving the file
+	if _, err := dst.Write(fileBytes); err != nil {
+		http.Error(w, "Error saving the file", http.StatusInternalServerError)
+	}
+}
+
+func SaveFile(name string) (*os.File, error) {
+	dst, err := os.Create(name)
+	if err != nil {
+		return nil, err
+	}
+	return dst, nil
+}
+
+func saveToSmbServer(filename string, file io.Reader) error {
+	// Подключение к SMB серверу
+	conn, err := net.Dial("tcp", "SERVERNAME:445")
+
+	_ = filename
+	_ = file
+
+	d := &smb2.Dialer{
+		Initiator: &smb2.NTLMInitiator{
+			User:     "USERNAME",
+			Password: "PASSWORD",
+		},
+	}
+
+	s, err := d.Dial(conn)
+	if err != nil {
+		fmt.Printf("Error occured while connecting to file server: %v", err)
+	}
+	defer s.Logoff()
+
+	fs, err := s.Mount("CARSHARE")
+	if err != nil {
+		fmt.Printf("Error occured while mounting: %v", err)
+	}
+	defer fs.Umount()
+
+	return nil
 }
