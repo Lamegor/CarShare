@@ -61,15 +61,15 @@ func main() {
 	CSRF := csrf.Protect(
 		[]byte("a-32-byte-long-key-goes-here"),
 		csrf.CookieName("X-CSRF-Token"),
-		csrf.Secure(false), // Set to true in production
+		csrf.Secure(false),  // Set to true in production
+		csrf.HttpOnly(true), // Set to false in production
 		csrf.Path("/auth"),
 		//csrf.ErrorHandler(http.HandlerFunc(serverError(403))),
 	)
 	// Обработчики маршрутов
 	r.Post("/auth/login", users.Login)
-	r.Get("/auth/login", users.GetCSRFToken)
+	r.Get("/auth/csrf-token", users.GetCSRFToken)
 	r.Post("/auth/register", users.Register)
-	r.Get("/auth/register", users.GetCSRFToken)
 	r.Get("/cars", carmanage.ListCars)
 	r.Get("/cars/{id}", carmanage.GetCarById)
 	r.Post("/cars/{id}/rent", SessionMiddleware(carmanage.RentCar))

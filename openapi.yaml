@@ -1,130 +1,283 @@
-openapi: 3.0.3
+openapi: 3.0.0
 info:
-  title: Car Rent
-  description: |-
-    Сайт создан для того, чтобы менеджить службу каршеринга
-    
-  version: 0.0.1
+  title: Car Rental API
+  description: API for car rental application including user registration, login, profile management, and more.
+  version: 1.0.0
 servers:
   - url: http://localhost:8080
-tags:
-  - name: Структура
-    description: Все url и методы
-  - name: basics
-    description: Базовые функции
-  - name: cars
-    description: Машины
-  - name: user
-    description: Операции с пользователями
 paths:
-  /login:
+  /auth/login:
     post:
-      tags:
-        - basics
-      summary: Login in your account
-      description: Login and get cookie
-      operationId: Login
+      summary: User login
+      description: Authenticates the user and returns a session cookie if successful.
+      parameters:
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          description: CSRF token.
+          schema:
+            type: string
+            example: y4ua7gNihlROfLakoWWBdmRiS6hmJ6fCMfGcoInx86WoC96JhE8PqlIP9zRz725PW8Sj4tmMJCWfCLUGTcdoiQ==
       requestBody:
-        description: Get user session
+        required: true
         content:
           application/json:
             schema:
-              example: {"username": "User", "password": "pass123"}
-        required: true
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The username of the user.
+                  example: "john_doe"
+                password:
+                  type: string
+                  description: The password of the user.
+                  example: "password123"
       responses:
         '200':
-          description: Successful operation
+          description: Login successful, returns user info and session cookie.
           content:
+            cookie:
+              schema:
+                type: string          
+                example: y4ua7gNihlROfLakoWWBdmRiS6hmJ6fCMfGcoInx86WoC96JhE8PqlIP9zRz725PW8Sj4tmMJCWfCLUGTcdoiQ==
             application/json:
               schema:
-                example: {"message": "Login successful", "user": "Some_User"}
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successful"
+                  user:
+                    type: string
+                    example: "john_doe"
         '400':
-          description: "Invalid input"
+          description: Invalid input or missing parameters.
         '401':
-          description: "Invalid credentials"
+          description: Invalid credentials (wrong username or password).
+        '429':
+          description: Too many failed login attempts. Try again later.
         '500':
-          description: "Internal Server Error"
-
-            
-  /register:
+          description: Internal server error.
+  /auth/register:
     post:
-      tags:
-        - basics
-      summary: Register
-      description: Creating new account
-      operationId: Register
+      summary: User registration
+      description: Registers a new user and returns a success response.
+      parameters:
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          description: CSRF token.
+          schema:
+            type: string
+            example: y4ua7gNihlROfLakoWWBdmRiS6hmJ6fCMfGcoInx86WoC96JhE8PqlIP9zRz725PW8Sj4tmMJCWfCLUGTcdoiQ==
       requestBody:
-        description: Creating an account and returns session
+        required: true
         content:
           application/json:
             schema:
-              example: {"username": "admin", "1_password": "adm123", "2_password": "adm123", "email": "sobaka_sutulaya@gmail.com"} 
-        required: true
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The username of the new user.
+                  example: "john_doe"
+                email:
+                  type: string
+                  description: The email of the new user.
+                  example: "john_doe@example.com"
+                1_password:
+                  type: string
+                  description: The first password input.
+                  example: "password123"
+                2_password:
+                  type: string
+                  description: The second password input (confirmation).
+                  example: "password123"
       responses:
         '201':
-          description: "User created"
+          description: User created successfully.
         '400':
-          description: "Invalid input"
+          description: Missing or invalid parameters (e.g., passwords don't match).
         '409':
-          description: "There is such user"
+          description: Username or email already exists.
         '500':
-          description: "Internal Server Error"  
-          
-  /cars:
-    get:
-      tags:
-        - cars
-      summary: View all available cars
-      responses:
-        '200':
-          description: Successful request
-          content:
-            application/json:
-              schema:
-                example: [{"Condition":"Available","Manufacturer":"Toyota","Model":"Corolla","Year":"2000","id":"1"},{"Condition":"Broken","Manufacturer":"Nissan","Model":"BlueBird","Year":"2002","id":"2"}]
+          description: Internal server error.
   /user/profile:
     get:
-      tags:
-        - user
-      summary: View profile 
+      summary: Get user profile
+      description: Retrieves the profile of the authenticated user.
+      parameters:
+        - in: cookie
+          name: auth
+          required: true
+          description: Authentication token.
+          schema:
+            type: string
+            example: y4ua7gNihlROfLakoWWBdmRiS6hmJ6fCMfGcoInx86WoC96JhE8PqlIP9zRz725PW8Sj4tmMJCWfCLUGTcdoiQ==
       responses:
         '200':
-          description: Successful request
+          description: User profile retrieved successfully.
           content:
             application/json:
               schema:
-                example: {"e-mail": "sas@mail.ru","first_name": "Михаил","gender": "М","id": 7,"last_name": "Ивченко","phone": "+7-999-999-99-99","second_name": "Витальевич","username": "mikkie211"}
+                type: object
+                properties:
+                  username:
+                    type: string
+                    example: "john_doe"
+                  id:
+                    type: integer
+                    example: 1
+                  first_name:
+                    type: string
+                    example: "John"
+                  second_name:
+                    type: string
+                    example: "William"
+                  last_name:
+                    type: string
+                    example: "Doe"
+                  phone:
+                    type: string
+                    example: "+1234567890"
+                  e-mail:
+                    type: string
+                    example: "john_doe@example.com"
+                  gender:
+                    type: string
+                    example: "M"
         '401':
-          description: Unauthorized
+          description: Unauthorized access (invalid session).
+        '500':
+          description: Internal server error.
           
+  /user/license/send:
+    post:
+      summary: Send user license
+      description: Placeholder endpoint for sending user license (implementation needed).
+      responses:
+        '200':
+          description: License sent successfully.
+        '401':
+          description: Unauthorized access (invalid session).
+        '500':
+          description: Internal server error.
+  /auth/csrf-token:
+    get:
+      summary: Get CSRF token
+      description: Returns a CSRF token to protect against cross-site request forgery (CSRF) attacks.
+      responses:
+        '200':
+          description: CSRF token generated successfully.
+          content:
+            X-Csrf-Token:
+              schema:
+                example: y4ua7gNihlROfLakoWWBdmRiS6hmJ6fCMfGcoInx86WoC96JhE8PqlIP9zRz725PW8Sj4tmMJCWfCLUGTcdoiQ==
+  /cars:
+    get:
+      summary: List all cars
+      description: Retrieves a list of all cars available for rent.
+      responses:
+        '200':
+          description: List of cars.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    manufacturer:
+                      type: string
+                      example: "Toyota"
+                    model:
+                      type: string
+                      example: "Corolla"
+                    year:
+                      type: integer
+                      example: 2020
+                    condition:
+                      type: string
+                      example: "Broken"
   /cars/{id}:
     get:
-      tags:
-        - cars
-      summary: View profile 
+      summary: Get car details
+      description: Retrieves details of a specific car by ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the car to retrieve.
+          schema:
+            type: integer
+            example: 1
       responses:
         '200':
-          description: Successful request
+          description: Car details retrieved successfully.
           content:
             application/json:
               schema:
-                example: {"Condition":"Available","Manufacturer":"Toyota","Model":"Corolla","Year":"2000"}
+                type: object
+                properties:
+                    manufacturer:
+                      type: string
+                      example: "Toyota"
+                    model:
+                      type: string
+                      example: "Corolla"
+                    year:
+                      type: integer
+                      example: 2020
+                    condition:
+                      type: string
+                      example: "Broken"
         '404':
-          description: No car by such id
-      
-              
-      
-components:
-  securitySchemes:
-    petstore_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
-          scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header
+          description: Car not found.
+  /cars/{id}/rent:
+    post:
+      summary: Rent a car
+      description: Allows the authenticated user to rent a car.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the car to rent.
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Car rented successfully.
+        '400':
+          description: Invalid input or already rented.
+        '401':
+          description: Unauthorized access (invalid session).
+        '404':
+          description: Car not found.
+        '500':
+          description: Internal server error.
+  /cars/{id}/track:
+    get:
+      summary: Track rented car
+      description: Retrieves tracking information for a rented car.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the car to track.
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Tracking information retrieved successfully.
+        '401':
+          description: Unauthorized access (invalid session).
+        '404':
+          description: Car not found.
+        '500':
+          description: Internal server error.

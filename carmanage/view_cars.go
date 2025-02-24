@@ -21,10 +21,10 @@ func ListCars(w http.ResponseWriter, r *http.Request) {
 	for _, car := range cars {
 		response := make(map[string]interface{})
 		response["id"] = car.ID
-		response["Manufacturer"] = car.Manufacturer
-		response["Model"] = car.Model
-		response["Year"] = car.YearOfManufacture
-		response["Condition"] = car.Condition
+		response["manufacturer"] = car.Manufacturer
+		response["model"] = car.Model
+		response["year"] = car.YearOfManufacture
+		response["condition"] = car.Condition
 		obj_responses = append(obj_responses, response)
 	}
 
@@ -54,10 +54,10 @@ func GetCarById(w http.ResponseWriter, r *http.Request) {
 
 	//Выводим информацию по машине
 	response := make(map[string]interface{})
-	response["Manufacturer"] = car.Manufacturer
-	response["Model"] = car.Model
-	response["Year"] = car.YearOfManufacture
-	response["Condition"] = car.Condition
+	response["manufacturer"] = car.Manufacturer
+	response["model"] = car.Model
+	response["year"] = car.YearOfManufacture
+	response["condition"] = car.Condition
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)

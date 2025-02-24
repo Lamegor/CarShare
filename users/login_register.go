@@ -72,6 +72,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Value:    cookieValue,
 		HttpOnly: true,
 		Expires:  time.Now().Add(30 * 24 * time.Hour),
+		Path:     "/",
 		//Secure:   true,
 	})
 	w.Header().Set("Content-Type", "application/json")
