@@ -102,17 +102,17 @@ export default {
 .vhod {
   text-align: center;
   margin-top: 15px;
-  border: 1px solid rgb(81, 112, 197);
+  border: 1px solid rgba(0, 255, 127, 0.676);
   width: 200px;
   padding: 20px;
   border-radius: 7px;
-  background-color: rgb(56, 81, 150);
+  background-color: rgba(0, 255, 128, 0.676);
   color: white;
   font-size: medium;
   display: inline-block;
   cursor: pointer;
 }
 .vhod:hover {
-  background-color: rgb(52, 69, 117);
+  background-color: rgba(0, 255, 128, 0.276);
 }
 </style>

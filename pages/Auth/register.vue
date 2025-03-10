@@ -18,13 +18,15 @@
           </form>
         </div>
 
-        <Enterbutton
-          :mails="mail"
-          :passwords="password"
-          :bools="bool"
-          :confirmpasswords="confirmpassword"
-          :names="name"
-        />
+        <div class="button-container">
+          <Enterbutton
+            :mails="mail"
+            :passwords="password"
+            :bools="bool"
+            :confirmpasswords="confirmpassword"
+            :names="name"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -47,17 +49,36 @@ export default {
 </script>
 
 <style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #0A0A0A;
+  background-image: url('/static/img/BUSHIDO.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  color: #FFF;
+  overflow-x: hidden;
+}
+label {
+  padding-bottom: 10px;
+}
+
 .register-form {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
-  align-items: center;
   justify-content: center;
   height: 93vh; 
-  z-index: 5;
-  background-image: url('https://zastavki.gas-kvas.com/uploads/posts/2024-09/thumbs/zastavki-gas-kvas-com-jop5-p-zastavki-na-telefon-dlya-muzhchin-krutie-m-5.jpg');
+  background: rgba(26, 26, 26, 0.97);
+  border-radius: 10px;
 }
+
 .register {
   display: flex;
   flex-direction: column;
@@ -65,33 +86,53 @@ export default {
   max-width: 400px;
 }
 
-.label {
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
 .input-register {
-  border: 1px solid #fffefe;
+  background-color: #333;
+  border: 1px solid #0BDA51;
+  color: #FFF;
   padding: 10px;
+  width: 100%;
   border-radius: 5px;
   margin-bottom: 15px;
   transition: border-color 0.3s;
 }
 
 .input-register::placeholder {
-  color: rgb(59, 85, 214);
+  color: #00FF7F;
 }
 
 .input-register:hover {
-  border-color: #007bff;
+  border-color: #00FF7F;
 }
 
 .for-shadow {
   padding: 25px;
   border-radius: 15px;
-  -webkit-box-shadow: 0px 1px 8px 6px rgba(0, 0, 0, 0.2);
-  -moz-box-shadow: 0px 1px 8px 6px rgba(0, 0, 0, 0.2);
-  box-shadow: 0px 1px 8px 6px rgba(255, 255, 255, 0.2);
-  background-color: rgb(24, 88, 224);
+  box-shadow: 0px 1px 8px 6px rgba(0, 255, 127, 0.2);
+  background-color: #1A1A1A;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 15px;
+}
+
+form button {
+  background-color: #00FF7F;
+  color: #0A0A0A;
+  padding: 10px 20px;
+  font-weight: bold;
+  border-radius: 5px;
+  border: none;
+}
+
+form button:hover {
+  background-color: #0BDA51;
+  color: #FFF;
 }
 </style>
