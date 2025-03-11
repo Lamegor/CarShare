@@ -60,7 +60,7 @@ export default {
       // const csrfToken = await this.$axios.$get('http://localhost:8080/auth/csrf-token');
       // this.csrfToken = csrfToken.X-Csrf-Token;
       let result = await csrf.json();
-      console.log(csrf, result.X-Csrf-Token, csrf.headers.get('X-Csrf-Token'));
+      console.log(csrf, result.X-csrf-Token, csrf.headers.get('X-Csrf-Token'));
       this.csrfToken = csrf.text;
     },
     apisReg () {
