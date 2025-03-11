@@ -11,7 +11,7 @@
         </form>
         
         <div class="button-container">
-          <Enterbutton :mails="email" :passwords="password" :bools="bool" />
+          <Enterbutton :mails="email" :passwords="password" :bools="bool" :names="name"/>
         </div>
       </div>
     </div>
@@ -26,7 +26,8 @@ export default {
     return {
       email: '',
       password: '',
-      bool: true
+      bool: true,
+      name: '',
     }
   }
 }

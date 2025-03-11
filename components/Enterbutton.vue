@@ -56,13 +56,10 @@ export default {
         };
       };
     },
-    GetCSRFToken () {
-      const csrfToken = this.$axios.$get('http://localhost:8080/auth/csrf-token');
+    async GetCSRFToken () {
+      const csrfToken = await this.$axios.$get('http://localhost:8080/auth/csrf-token');
       this.csrfToken = csrfToken.X-Csrf-Token;
     },
-    // PostCSRFToken () {
-    //   this.csrfToken = this.$axios.$post('')
-    // },
     apisReg () {
       fetch('http://localhost:8080/auth/register', {
         method: 'POST',
