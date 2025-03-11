@@ -104,7 +104,6 @@ methods: {
   apisLog() {
     fetch('http://localhost:8080/auth/login', {
       method: 'POST',
-      mode: 'no-cors',
       headers: { accept: 'application/json', 'Content-Type': 'application/json'},
       body: JSON.stringify({
         username: this.names,
