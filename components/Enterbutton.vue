@@ -35,6 +35,10 @@ export default {
       csrfToken: '',
     }
   },
+
+  mounted() {
+    this.GetCSRFToken();
+  },
   methods: {
     Listener () {
       this.GetCSRFToken()
