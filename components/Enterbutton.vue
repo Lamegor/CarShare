@@ -30,10 +30,18 @@ export default {
     }
   },
 
+  data() {
+    return {
+      csrfToken: null,
+    };
+  },
+
   methods: {
     Listener () {
+      this.GetCSRFToken()
       if (this.bools) {
         if (this.mails && this.passwords) {
+          this.GetCSRFToken()
           this.apisLog()
         } else {
           alert('Остались незаполненные поля')
@@ -48,10 +56,17 @@ export default {
         };
       };
     },
+    GetCSRFToken () {
+      const csrfToken = this.$axios.$get('http://localhost:8080/auth/csrf-token');
+      this.csrfToken = csrfToken.X-Csrf-Token;
+    },
+    // PostCSRFToken () {
+    //   this.csrfToken = this.$axios.$post('')
+    // },
     apisReg () {
-      fetch('https://course-vue.javascript.ru/api/auth/register', {
+      fetch('http://localhost:8080/auth/register', {
         method: 'POST',
-        headers: { accept: 'application/json', 'Content-Type': 'application/json' },
+        headers: { accept: 'application/json', 'Content-Type': 'application/json', 'X-Csrf-Token': this.csrfToken },
         body: JSON.stringify(
           {
             username: this.names,
@@ -74,9 +89,9 @@ export default {
         })
       },
     apisLog () {
-      fetch('https://course-vue.javascript.ru/api/auth/register', {
+      fetch('https://localhost:8080/auth/login', {
         method: 'POST',
-        headers: { accept: 'application/json', 'Content-Type': 'application/json' },
+        headers: { accept: 'application/json', 'Content-Type': 'application/json', 'X-Csrf-Token': this.csrfToken },
         body: JSON.stringify(
           {
             username: this.names,

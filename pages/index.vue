@@ -13,7 +13,7 @@
           <li><a href="#pricing">Цены</a></li>
           <li><a href="#contact">Контакты</a></li>
         </ul>
-        <a href="/Auth/login" class="login-btn">Вход</a>
+        <NuxtLink to="/Auth/login" class="login-btn">Вход</NuxtLink>
       </nav>
     </header>
 
@@ -28,7 +28,7 @@
           <h2>Добро пожаловать в</h2>
           <h1>EGK Cars</h1>
           <p>Ваш каршеринг</p>
-          <a href="/Auth/register" class="cta-btn">Начать</a>
+          <NuxtLink to="/Auth/register" class="cta-btn">Начать</NuxtLink>
         </div>
       </section>
 
@@ -47,24 +47,24 @@
       <section id="pricing" class="pricing">
         <h2>Цены</h2>
         <div class="pricing-options">
-          <div class="pricing-option">
+          <NuxtLink class="pricing-option" to="/cars">
             <img src="img/carN.png" alt="Стандарт" />
             <h3>Стандарт</h3>
             <p>От 1000 рублей в сутки</p>
             <p>Для краткосрочных поездок и аренды автомобилей на один день.</p>
-          </div>
-          <div class="pricing-option">
+          </NuxtLink>
+          <NuxtLink class="pricing-option" to="/cars">
             <img src="img/carE.png" alt="Эконом" />
             <h3>Эконом</h3>
             <p>От 5000 рублей в неделю</p>
             <p>Для аренды на неделю с выгодными условиями.</p>
-          </div>
-          <div class="pricing-option">
+          </NuxtLink>
+          <NuxtLink class="pricing-option" to="/cars">
             <img src="img/carP.png" alt="Бизнес" />
             <h3>Бизнес</h3>
             <p>От 20000 рублей в месяц</p>
             <p>Для долгосрочной аренды с гарантией лучших автомобилей и обслуживания.</p>
-          </div>
+          </NuxtLink>
         </div>
       </section>
 
@@ -467,6 +467,12 @@
     filter: invert(1) sepia(1) saturate(5000) hue-rotate(70deg);
   }
 
+  .pricing-option:hover {
+    -webkit-box-shadow: 0px 3px 10px 11px rgba(0, 0, 0, 0.27);
+    -moz-box-shadow: 0px 3px 10px 11px rgba(0, 0, 0, 0.27);
+    box-shadow: 0px 3px 10px 11px rgba(0, 0, 0, 0.27);
+  }
+
   /* Стили для контактов */
   .contact form {
     display: flex;
@@ -475,7 +481,7 @@
   }
 
   .form-group {
-    width: 100%;
+    width: 30%;
     margin-bottom: 20px;
     text-align: left;
   }
