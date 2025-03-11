@@ -38,7 +38,7 @@ export default {
 },
 mounted() {
   // Запрашиваем CSRF токен при загрузке компонента
-  this.GetCSRFToken();
+  // this.GetCSRFToken();
 },
 methods: {
   Listener() {
@@ -58,31 +58,31 @@ methods: {
       }
     }
   },
-  async GetCSRFToken() {
-    try {
-      let csrf = await fetch('http://localhost:8080/auth/csrf-token');
+  // async GetCSRFToken() {
+  //   try {
+  //     let csrf = await fetch('http://localhost:8080/auth/csrf-token');
 
-      // Проверяем, успешен ли ответ
-      if (!csrf.ok) {
-        throw new Error(`Ошибка сети: ${csrf.status} ${csrf.statusText}`);
-      }
+  //     // Проверяем, успешен ли ответ
+  //     if (!csrf.ok) {
+  //       throw new Error(`Ошибка сети: ${csrf.status} ${csrf.statusText}`);
+  //     }
 
-      // Получаем CSRF токен из заголовков
-      const csrfToken = csrf.headers.get('X-Csrf-Token');
-      if (!csrfToken) {
-        throw new Error('CSRF токен не найден в заголовках ответа.');
-      }
+  //     // Получаем CSRF токен из заголовков
+  //     const csrfToken = csrf.headers.get('X-Csrf-Token');
+  //     if (!csrfToken) {
+  //       throw new Error('CSRF токен не найден в заголовках ответа.');
+  //     }
 
-      // Сохраняем CSRF токен в состоянии компонента
-      this.csrfToken = csrfToken;
-    } catch (error) {
-      console.error('Ошибка при получении CSRF токена:', error);
-    }
-  },
+  //     // Сохраняем CSRF токен в состоянии компонента
+  //     this.csrfToken = csrfToken;
+  //   } catch (error) {
+  //     console.error('Ошибка при получении CSRF токена:', error);
+  //   }
+  // },
   apisReg() {
     fetch('http://localhost:8080/auth/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Csrf-Token': this.csrfToken },
+      headers: { 'Content-Type': 'application/json'},
       body: JSON.stringify({
         username: this.names,
         email: this.mails,
@@ -104,7 +104,8 @@ methods: {
   apisLog() {
     fetch('http://localhost:8080/auth/login', {
       method: 'POST',
-      headers: { accept: 'application/json', 'Content-Type': 'application/json', 'X-Csrf-Token': this.csrfToken },
+      mode: 'no-cors',
+      headers: { accept: 'application/json', 'Content-Type': 'application/json'},
       body: JSON.stringify({
         username: this.names,
         password: this.passwords,
