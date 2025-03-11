@@ -112,6 +112,15 @@ methods: {
     })
     .then((res) => {
       if (res.status === 200) {
+        const setCookieHeader = response.headers['set-cookie'];
+        if (setCookieHeader) {
+          // Устанавливаем куку с помощью cookie-universal-nuxt
+          this.$cookies.set('myCookie', setCookieHeader, {
+            path: '/', // Путь, на котором кука доступна
+            maxAge: 60 * 60 * 24, // Время жизни куки в секундах (1 день)
+            secure: false, // Установите true, если используете HTTPS
+          });
+        }
         this.$router.push({ name: 'index' });
       } else {
         alert(res.status);

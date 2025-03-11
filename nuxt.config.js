@@ -16,7 +16,7 @@ export default {
     ]
   },
 
-  modules: ['@nuxtjs/axios'],
+  modules: ['@nuxtjs/axios', 'cookie-universal-nuxt'],
 
 
   // Global CSS: https://go.nuxtjs.dev/config-css
