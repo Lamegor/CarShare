@@ -16,22 +16,21 @@ export default {
     ]
   },
 
-  modules: [
-    '@nuxtjs/axios'
-  ],
+  modules: ['@nuxtjs/axios'],
   axios: {
-    baseURL: 'http://localhost:8000', // Укажи адрес API
-    credentials: true // Разрешает работу с куками
+    baseURL: 'http://localhost:8000', // Укажи свой API
+    credentials: true, // Разрешает работу с куками
   },
+  router: {
+    middleware: ['csrf'], // Подключаем middleware для получения CSRF-токена
+  },  
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [
-  ],
-
+  plugins: ['~/plugins/axios.js'],
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
 

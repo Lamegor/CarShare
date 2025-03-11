@@ -30,12 +30,6 @@ export default {
     }
   },
 
-  data() {
-    return {
-      csrfToken: '',
-    };
-  },
-
   methods: {
     Listener () {
       this.GetCSRFToken()
@@ -56,22 +50,22 @@ export default {
         };
       };
     },
-    async GetCSRFToken () {
-      let response = await fetch('http://localhost:8080/auth/csrf-token');
+    // async GetCSRFToken () {
+    //   let response = await fetch('http://localhost:8080/auth/csrf-token');
 
-      if (response.ok) { // если HTTP-статус в диапазоне 200-299
-        let json = await response.json();
-      } else {
-        alert("Ошибка HTTP: " + response.status);
-      }
-      // const csrfToken = await this.$axios.$get('http://localhost:8080/auth/csrf-token');
-      // this.csrfToken = csrfToken.X-Csrf-Token;
-      this.csrfToken = json.X-Csrf-Token;
-    },
+    //   if (response.ok) { // если HTTP-статус в диапазоне 200-299
+    //     let json = await response.json();
+    //   } else {
+    //     alert("Ошибка HTTP: " + response.status);
+    //   }
+    //   // const csrfToken = await this.$axios.$get('http://localhost:8080/auth/csrf-token');
+    //   // this.csrfToken = csrfToken.X-Csrf-Token;
+    //   this.csrfToken = json.X-Csrf-Token;
+    // },
     apisReg () {
       fetch('http://localhost:8080/auth/register', {
         method: 'POST',
-        headers: { accept: 'application/json', 'Content-Type': 'application/json', 'X-Csrf-Token': this.csrfToken },
+        headers: {'Content-Type': 'application/json', 'X-Csrf-Token': csrfToken },
         body: JSON.stringify(
           {
             username: this.names,
@@ -114,7 +108,13 @@ export default {
           }
         })
       }
-  }
+  },
+
+  computed: {
+    csrfToken() {
+      return this.$store.state.csrfToken;
+    }
+  },
 }
 </script>
 
