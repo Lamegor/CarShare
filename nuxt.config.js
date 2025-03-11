@@ -16,6 +16,14 @@ export default {
     ]
   },
 
+  modules: [
+    '@nuxtjs/axios'
+  ],
+  axios: {
+    baseURL: 'http://localhost:8000', // Укажи адрес API
+    credentials: true // Разрешает работу с куками
+  },
+
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
   ],
