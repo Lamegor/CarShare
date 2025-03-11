@@ -56,12 +56,11 @@ export default {
       };
     },
     async GetCSRFToken () {
-      let csrf = await fetch('http://localhost:8080/auth/csrf-token'
-      .then(response => response.json())
-      );
+      let csrf = await fetch('http://localhost:8080/auth/csrf-token')
       // const csrfToken = await this.$axios.$get('http://localhost:8080/auth/csrf-token');
       // this.csrfToken = csrfToken.X-Csrf-Token;
-      this.csrfToken = csrf.X-Csrf-Token;
+      console.log(csrf, csrf.text);
+      this.csrfToken = csrf.text;
     },
     apisReg () {
       fetch('http://localhost:8080/auth/register', {
