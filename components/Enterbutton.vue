@@ -55,14 +55,31 @@ export default {
         };
       };
     },
-    async GetCSRFToken () {
-      let csrf = await fetch('http://localhost:8080/auth/csrf-token')
-      // const csrfToken = await this.$axios.$get('http://localhost:8080/auth/csrf-token');
-      // this.csrfToken = csrfToken.X-Csrf-Token;
-      let result = await csrf.json();
-      console.log(csrf, result, csrf.headers.get('X-Csrf-Token'));
-      this.csrfToken = csrf.text;
-    },
+    async GetCSRFToken() {
+    try {
+        let csrf = await fetch('http://localhost:8080/auth/csrf-token');
+
+        // Проверяем, успешен ли ответ
+        if (!csrf.ok) {
+            throw new Error(`Ошибка сети: ${csrf.status} ${csrf.statusText}`);
+        }
+
+        // Получаем CSRF токен из заголовков
+        const csrfToken = csrf.headers.get('X-Csrf-Token');
+        if (!csrfToken) {
+            throw new Error('CSRF токен не найден в заголовках ответа.');
+        }
+
+        // Обрабатываем тело ответа
+        let result = await csrf.json();
+        console.log(csrf, result, csrfToken); // Выводим данные в консоль
+
+        // Сохраняем CSRF токен в состоянии компонента
+        this.csrfToken = csrfToken;
+    } catch (error) {
+        console.error('Ошибка при получении CSRF токена:', error);
+    } 
+  }, 
     apisReg () {
       fetch('http://localhost:8080/auth/register', {
         method: 'POST',
