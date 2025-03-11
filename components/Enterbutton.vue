@@ -115,7 +115,7 @@ methods: {
         const setCookieHeader = response.headers['set-cookie'];
         if (setCookieHeader) {
           // Устанавливаем куку с помощью cookie-universal-nuxt
-          this.$cookies.set('myCookie', setCookieHeader, {
+          this.$cookies.set('auth', setCookieHeader, {
             path: '/', // Путь, на котором кука доступна
             maxAge: 60 * 60 * 24, // Время жизни куки в секундах (1 день)
             secure: false, // Установите true, если используете HTTPS
