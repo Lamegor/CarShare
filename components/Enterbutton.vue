@@ -30,107 +30,98 @@ export default {
     }
   },
 
-  data () {
-    return {
-      csrfToken: '',
+  data() {
+  return {
+    csrfToken: '',
+    // другие данные
+  }
+},
+mounted() {
+  // Запрашиваем CSRF токен при загрузке компонента
+  this.GetCSRFToken();
+},
+methods: {
+  Listener() {
+    if (this.bools) {
+      if (this.mails && this.passwords) {
+        this.apisLog();
+      } else {
+        alert('Остались незаполненные поля');
+      }
+    } else {
+      if (this.passwords !== this.confirmpasswords) {
+        alert('Пароли не совпадают');
+      } else if (this.passwords && this.confirmpasswords && this.mails && this.names) {
+        this.apisReg();
+      } else {
+        alert('Остались незаполненные поля');
+      }
     }
   },
+  async GetCSRFToken() {
+    try {
+      let csrf = await fetch('http://localhost:8080/auth/csrf-token');
 
-  mounted() {
-    this.GetCSRFToken();
+      // Проверяем, успешен ли ответ
+      if (!csrf.ok) {
+        throw new Error(`Ошибка сети: ${csrf.status} ${csrf.statusText}`);
+      }
+
+      // Получаем CSRF токен из заголовков
+      const csrfToken = csrf.headers.get('X-Csrf-Token');
+      if (!csrfToken) {
+        throw new Error('CSRF токен не найден в заголовках ответа.');
+      }
+
+      // Сохраняем CSRF токен в состоянии компонента
+      this.csrfToken = csrfToken;
+    } catch (error) {
+      console.error('Ошибка при получении CSRF токена:', error);
+    }
   },
-  methods: {
-    Listener () {
-      this.GetCSRFToken()
-      if (this.bools) {
-        if (this.mails && this.passwords) {
-          this.GetCSRFToken()
-          this.apisLog()
-        } else {
-          alert('Остались незаполненные поля')
-        };
+  apisReg() {
+    fetch('http://localhost:8080/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Csrf-Token': this.csrfToken },
+      body: JSON.stringify({
+        username: this.names,
+        email: this.mails,
+        '1_password': this.passwords,
+        '2_password': this.confirmpasswords,
+      })
+    })
+    .then((res) => {
+      if (res.status === 201) {
+        this.$router.push({ name: 'Auth-login' });
       } else {
-        if (this.passwords !== this.confirmpasswords) {
-          alert('Пароли не совпадают')
-        } else if (this.passwords && this.confirmpasswords && this.mails && this.names) {
-          this.apisReg()
-        } else {
-          alert('Остались незаполненные поля')
-        };
-      };
-    },
-    async GetCSRFToken() {
-      try {
-          let csrf = await fetch('http://localhost:8080/auth/csrf-token');
-
-          // Проверяем, успешен ли ответ
-          if (!csrf.ok) {
-              throw new Error(`Ошибка сети: ${csrf.status} ${csrf.statusText}`);
-          }
-
-          // Получаем CSRF токен из заголовков
-          const csrfToken = csrf.headers.get('X-CSRF-Token');
-          if (!csrfToken) {
-              throw new Error('CSRF токен не найден в заголовках ответа.');
-          }
-
-          // Обрабатываем тело ответа
-          let result = await csrf.json();
-          console.log(csrf, result, csrfToken); // Выводим данные в консоль
-
-          // Сохраняем CSRF токен в состоянии компонента
-          this.csrfToken = csrfToken;
-      } catch (error) {
-          console.error('Ошибка при получении CSRF токена:', error);
+        alert(res.status);
       }
-    },
-    apisReg () {
-      fetch('http://localhost:8080/auth/register', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json', 'X-Csrf-Token': this.csrfToken },
-        body: JSON.stringify(
-          {
-            username: this.names,
-            email: this.mails,
-            '1_password': this.passwords,
-            '2_password': this.confirmpasswords,
-          })
-      })
-        .then((res) => {
-          if (res.status === 201) {
-            this.$router.push({ name: 'Auth-login' })
-          } else {
-            alert(res.status)
-          }
-        })
-        .then((res) => {
-          if (res.status === 400) {
-            alert(res)
-          }
-        })
-      },
-    apisLog () {
-      fetch('https://localhost:8080/auth/login', {
-        method: 'POST',
-        headers: { accept: 'application/json', 'Content-Type': 'application/json', 'X-Csrf-Token': this.csrfToken },
-        body: JSON.stringify(
-          {
-            username: this.names,
-            password: this.passwords,
-          })
-      })
-        .then((res) => {
-          if (res.status === 200) {
-            this.$router.push({ name: 'index'})
-          }
-        })
-        .then((res) => {
-          if (res.status === 401) {
-            alert(res)
-          }
-        })
-      }
+    })
+    .catch((error) => {
+      console.error('Ошибка при регистрации:', error);
+    });
   },
+  apisLog() {
+    fetch('http://localhost:8080/auth/login', {
+      method: 'POST',
+      headers: { accept: 'application/json', 'Content-Type': 'application/json', 'X-Csrf-Token': this.csrfToken },
+      body: JSON.stringify({
+        username: this.names,
+        password: this.passwords,
+      })
+    })
+    .then((res) => {
+      if (res.status === 200) {
+        this.$router.push({ name: 'index' });
+      } else {
+        alert(res.status);
+      }
+    })
+    .catch((error) => {
+      console.error('Ошибка при входе:', error);
+    });
+  }
+  }
 }
 </script>
 
