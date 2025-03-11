@@ -32,7 +32,7 @@ export default {
 
   data() {
     return {
-      csrfToken: null,
+      csrfToken: '',
     };
   },
 
@@ -57,8 +57,16 @@ export default {
       };
     },
     async GetCSRFToken () {
-      const csrfToken = await this.$axios.$get('http://localhost:8080/auth/csrf-token');
-      this.csrfToken = csrfToken.X-Csrf-Token;
+      let response = await fetch('http://localhost:8080/auth/csrf-token');
+
+      if (response.ok) { // если HTTP-статус в диапазоне 200-299
+        let json = await response.json();
+      } else {
+        alert("Ошибка HTTP: " + response.status);
+      }
+      // const csrfToken = await this.$axios.$get('http://localhost:8080/auth/csrf-token');
+      // this.csrfToken = csrfToken.X-Csrf-Token;
+      this.csrfToken = json.X-Csrf-Token;
     },
     apisReg () {
       fetch('http://localhost:8080/auth/register', {
